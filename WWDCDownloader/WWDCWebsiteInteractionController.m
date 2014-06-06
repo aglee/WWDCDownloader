@@ -99,27 +99,36 @@
 		}
 	}
 
+	self.downloadProgressBar.maxValue++;
+
 	NSString *saveFileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
 	NSString *saveFilePath = [downloadsFolder stringByAppendingPathComponent:saveFileName];
+	NSString *tempFilePath = [saveFilePath stringByAppendingPathExtension:@"download"];
+
+	if ([[NSFileManager defaultManager] fileExistsAtPath:saveFilePath]) {
+		// Looks like we already downloaded this file.
+		[self incrementProgressBar];
+		return;
+	}
 
 	__weak typeof(self) weakSelf = self;
-	WWDCURLRequest *request = [WWDCURLRequest requestWithRemoteAddress:sourceURL.absoluteString savePath:saveFilePath];
+	WWDCURLRequest *request = [WWDCURLRequest requestWithRemoteAddress:sourceURL.absoluteString savePath:tempFilePath];
 
 	request.successBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"done downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
 		[strongSelf incrementProgressBar];
+		[[NSFileManager defaultManager] moveItemAtPath:tempFilePath toPath:saveFilePath error:NULL];
 	};
 
 	request.failureBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"failed downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
 		[strongSelf incrementProgressBar];
+		[[NSFileManager defaultManager] removeItemAtPath:tempFilePath error:NULL];
 	};
     
 	[[NSOperationQueue requestQueue] addOperation:request];
-
-	self.downloadProgressBar.maxValue++;
 }
 
 - (void) incrementProgressBar
