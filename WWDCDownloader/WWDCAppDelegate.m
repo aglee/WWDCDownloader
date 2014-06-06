@@ -15,6 +15,7 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *) notification {
 	_browserViewController = [[WWDCWebsiteInteractionController alloc] init];
+	[_browserViewController.window center];
 	[_browserViewController showWindow:nil];
 }
 @end
