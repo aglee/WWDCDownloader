@@ -94,10 +94,33 @@
 
 #pragma mark -
 
-- (void) downloadWithURL:(NSURL *)sourceURL forSession:(WWDCSession *) session {
+- (void) downloadHDVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.highDefVideoURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (HD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
+}
+
+- (void) downloadSDVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.standardDefVideoURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (SD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
+}
+
+- (void) downloadPDFVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.standardDefVideoURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
+}
+
+- (void) downloadFromURL:(NSURL *)sourceURL toFileName:(NSString *)fileName {
     if (sourceURL == nil) {
         return;
     }
+
+	_totalNumberToDownload++;
 
 	static NSString *downloadsFolder = nil;
 	if (!downloadsFolder) {
@@ -109,10 +132,7 @@
 		}
 	}
 
-	_totalNumberToDownload++;
-
-	NSString *saveFileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
-	NSString *saveFilePath = [downloadsFolder stringByAppendingPathComponent:saveFileName];
+	NSString *saveFilePath = [downloadsFolder stringByAppendingPathComponent:fileName];
 	NSString *tempFilePath = [saveFilePath stringByAppendingPathExtension:@"download"];
 
 	if ([[NSFileManager defaultManager] fileExistsAtPath:saveFilePath]) {
