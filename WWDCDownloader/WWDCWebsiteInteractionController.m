@@ -22,6 +22,8 @@
 	NSUInteger _totalNumberToDownload;
 	NSUInteger _numberCompleted;
 	NSUInteger _numberFailed;
+
+	NSTimeInterval _startTimestamp;
 }
 
 - (id) init {
@@ -58,6 +60,7 @@
 		return;
 	}
 
+	_startTimestamp = [[NSDate date] timeIntervalSince1970];
 	_totalNumberToDownload = _numberCompleted = _numberFailed = 0;
 
     for (WWDCSession *session in _sessions) {
@@ -146,9 +149,23 @@
 	self.downloadProgressBar.doubleValue = _numberCompleted + _numberFailed;
 	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
 		[self.downloadProgressBar setHidden:YES];
-	}
 
-	[self putNumberCompletedInStatusField];
+		NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
+		self.statusTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
+	} else {
+		[self putNumberCompletedInStatusField];
+	}
+}
+
+- (NSString *)stringForTimeInterval:(NSTimeInterval)interval
+{
+	long totalSeconds = interval;
+	long hours = totalSeconds / (60*60);
+	long remainder = totalSeconds % (60*60);
+	long minutes = remainder / 60;
+	long seconds = remainder % 60;
+
+	return [NSString stringWithFormat:@"Time elapsed: %02ld:%02ld:%02ld", hours, minutes, seconds];
 }
 
 - (void) findDownloadsForSession:(WWDCSession *)session {
