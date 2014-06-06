@@ -92,6 +92,7 @@
 				92112776176B00C30030AD92 /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		92112776176B00C30030AD92 /* Products */ = {
 			isa = PBXGroup;
