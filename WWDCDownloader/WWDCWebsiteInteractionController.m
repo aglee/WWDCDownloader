@@ -14,9 +14,14 @@
 
 @implementation WWDCWebsiteInteractionController {
 	NSArray *_sessions;  // WWDCSession
+
 	NSUInteger _numberOfHD;
 	NSUInteger _numberOfSD;
 	NSUInteger _numberOfPDF;
+
+	NSUInteger _totalNumberToDownload;
+	NSUInteger _numberCompleted;
+	NSUInteger _numberFailed;
 }
 
 - (id) init {
@@ -53,18 +58,20 @@
 		return;
 	}
 
-	self.downloadProgressBar.minValue = 0;
-	self.downloadProgressBar.maxValue = 0;
-	self.downloadProgressBar.doubleValue = 0;
+	_totalNumberToDownload = _numberCompleted = _numberFailed = 0;
 
     for (WWDCSession *session in _sessions) {
-		// Increments maxValue for every download that is queued.
+		// Updates _totalNumberToDownload.
         [self findDownloadsForSession:session];
     }
 
 	// Update UI.
+	self.downloadProgressBar.minValue = 0;
+	self.downloadProgressBar.doubleValue = 0;
+	self.downloadProgressBar.maxValue = _totalNumberToDownload;
 	[self putNumberCompletedInStatusField];
-	if (self.downloadProgressBar.maxValue > 0) {
+
+	if (_totalNumberToDownload > 0) {
 		[self.HDCheckbox setEnabled:NO];
 		[self.SDCheckbox setEnabled:NO];
 		[self.PDFCheckbox setEnabled:NO];
@@ -79,7 +86,7 @@
 }
 
 - (void) putNumberCompletedInStatusField {
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"%ld of %ld completed", (long)self.downloadProgressBar.doubleValue, (long)self.downloadProgressBar.maxValue];
+	self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ done, %@ failed, %@ remaining", @(_numberCompleted), @(_numberFailed), @(_totalNumberToDownload - _numberCompleted - _numberFailed)];
 }
 
 #pragma mark -
@@ -99,7 +106,7 @@
 		}
 	}
 
-	self.downloadProgressBar.maxValue++;
+	_totalNumberToDownload++;
 
 	NSString *saveFileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
 	NSString *saveFilePath = [downloadsFolder stringByAppendingPathComponent:saveFileName];
@@ -107,7 +114,8 @@
 
 	if ([[NSFileManager defaultManager] fileExistsAtPath:saveFilePath]) {
 		// Looks like we already downloaded this file.
-		[self incrementProgressBar];
+		_numberCompleted++;
+		[self updateDownloadProgressBar];
 		return;
 	}
 
@@ -117,24 +125,26 @@
 	request.successBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"done downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
-		[strongSelf incrementProgressBar];
+		_numberCompleted++;
+		[strongSelf updateDownloadProgressBar];
 		[[NSFileManager defaultManager] moveItemAtPath:tempFilePath toPath:saveFilePath error:NULL];
 	};
 
 	request.failureBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"failed downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
-		[strongSelf incrementProgressBar];
+		_numberFailed++;
+		[strongSelf updateDownloadProgressBar];
 		[[NSFileManager defaultManager] removeItemAtPath:tempFilePath error:NULL];
 	};
     
 	[[NSOperationQueue requestQueue] addOperation:request];
 }
 
-- (void) incrementProgressBar
+- (void) updateDownloadProgressBar
 {
-	self.downloadProgressBar.doubleValue++;
-	if (self.downloadProgressBar.doubleValue == self.downloadProgressBar.maxValue) {
+	self.downloadProgressBar.doubleValue = _numberCompleted + _numberFailed;
+	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
 		[self.downloadProgressBar setHidden:YES];
 	}
 
