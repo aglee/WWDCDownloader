@@ -20,6 +20,13 @@
 @property (assign) IBOutlet NSButton *downloadButton;
 @property (assign) IBOutlet NSProgressIndicator *downloadProgressBar;
 
+@property (assign) IBOutlet NSTextField *timeElapsedTextField;
+
+@property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
+@property (nonatomic, assign) NSUInteger numberCompleted;
+@property (nonatomic, assign) NSUInteger numberFailed;
+@property (nonatomic, assign) NSUInteger numberRemaining;
+
 - (IBAction) download:(id) sender;
 
 @end

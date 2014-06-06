@@ -14,15 +14,6 @@
 
 @implementation WWDCWebsiteInteractionController {
 	NSArray *_sessions;  // WWDCSession
-
-	NSUInteger _numberOfHD;
-	NSUInteger _numberOfSD;
-	NSUInteger _numberOfPDF;
-
-	NSUInteger _totalNumberToDownload;
-	NSUInteger _numberCompleted;
-	NSUInteger _numberFailed;
-
 	NSTimeInterval _startTimestamp;
 }
 
@@ -53,6 +44,10 @@
 	[self.downloadProgressBar setHidden:YES];
 }
 
+- (NSInteger)totalNumberToDownload {
+	return self.numberAlreadyDownloaded + self.numberCompleted + self.numberFailed + self.numberRemaining;
+}
+
 #pragma mark -
 
 - (IBAction) download:(id) sender {
@@ -61,42 +56,33 @@
 	}
 
 	_startTimestamp = [[NSDate date] timeIntervalSince1970];
-	_totalNumberToDownload = _numberCompleted = _numberFailed = 0;
+	self.numberAlreadyDownloaded = self.numberCompleted = self.numberFailed = self.numberRemaining = 0;
 
     for (WWDCSession *session in _sessions) {
-		// Updates _totalNumberToDownload.
+		// Updates numberAlreadyDownloaded and numberRemaining.
         [self findDownloadsForSession:session];
     }
 
 	// Update UI.
 	self.downloadProgressBar.minValue = 0;
-	self.downloadProgressBar.doubleValue = 0;
-	self.downloadProgressBar.maxValue = _totalNumberToDownload;
-	[self putNumberCompletedInStatusField];
+	self.downloadProgressBar.maxValue = self.totalNumberToDownload;
+	[self updateDownloadProgressBar];
 
-	if (_totalNumberToDownload > 0) {
+	self.statusTextField.stringValue = [NSString stringWithFormat:@"Downloading %@ files", @(self.totalNumberToDownload)];
+
+	if (self.totalNumberToDownload > 0) {
 		[self.HDCheckbox setEnabled:NO];
 		[self.SDCheckbox setEnabled:NO];
 		[self.PDFCheckbox setEnabled:NO];
 
-		self.downloadButton.title = @"Quit";
-		self.downloadButton.target = nil;
-		self.downloadButton.action = @selector(terminate:);
+		[self.downloadButton setEnabled:NO];
+//		self.downloadButton.title = @"Quit";
+//		self.downloadButton.target = nil;
+//		self.downloadButton.action = @selector(terminate:);
 
 		[self.downloadProgressBar setHidden:NO];
 		[self.downloadProgressBar startAnimation:nil];
 	}
-}
-
-- (void) putNumberCompletedInStatusField {
-	NSString *timeElapsedString = @"";
-
-	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
-		NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
-		timeElapsedString = [NSString stringWithFormat:@", %@", [self stringForTimeInterval:(endTimestamp - _startTimestamp)]];
-	}
-
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ done, %@ failed, %@ remaining%@", @(_numberCompleted), @(_numberFailed), @(_totalNumberToDownload - _numberCompleted - _numberFailed), timeElapsedString];
 }
 
 #pragma mark -
@@ -127,8 +113,6 @@
         return;
     }
 
-	_totalNumberToDownload++;
-
 	static NSString *downloadsFolder = nil;
 	if (!downloadsFolder) {
 		NSString *temporaryFolder = [NSSearchPathForDirectoriesInDomains(NSDownloadsDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -144,9 +128,10 @@
 
 	if ([[NSFileManager defaultManager] fileExistsAtPath:saveFilePath]) {
 		// Looks like we already downloaded this file.
-		_numberCompleted++;
-		[self updateDownloadProgressBar];
+		self.numberAlreadyDownloaded++;
 		return;
+	} else {
+		self.numberRemaining++;
 	}
 
 	__weak typeof(self) weakSelf = self;
@@ -155,7 +140,8 @@
 	request.successBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"done downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
-		_numberCompleted++;
+		self.numberCompleted++;
+		self.numberRemaining--;
 		[strongSelf updateDownloadProgressBar];
 		[[NSFileManager defaultManager] moveItemAtPath:tempFilePath toPath:saveFilePath error:NULL];
 	};
@@ -163,7 +149,8 @@
 	request.failureBlock = ^(WWDCURLRequest *request, WWDCURLResponse *response, NSError *error) {
 		__strong typeof(weakSelf) strongSelf = weakSelf;
 		NSLog(@"failed downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
-		_numberFailed++;
+		self.numberFailed++;
+		self.numberRemaining--;
 		[strongSelf updateDownloadProgressBar];
 		[[NSFileManager defaultManager] removeItemAtPath:tempFilePath error:NULL];
 	};
@@ -173,12 +160,17 @@
 
 - (void) updateDownloadProgressBar
 {
-	self.downloadProgressBar.doubleValue = _numberCompleted + _numberFailed;
-	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
+	if (self.numberRemaining == 0) {
 		[self.downloadProgressBar setHidden:YES];
+	} else {
+		self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
 	}
+	[self updateTimeElapsedField];
+}
 
-	[self putNumberCompletedInStatusField];
+- (void) updateTimeElapsedField {
+	NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
+	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
 }
 
 - (NSString *)stringForTimeInterval:(NSTimeInterval)interval
@@ -208,18 +200,25 @@
 }
 
 - (void) countAvailableFiles {
-	_numberOfHD = _numberOfSD = _numberOfPDF = 0;
+	NSInteger numberOfHD = 0;
+	NSInteger numberOfSD = 0;
+	NSInteger numberOfPDF = 0;
+
 	for (WWDCSession *session in _sessions) {
 		if (session.highDefVideoURL) {
-			_numberOfHD++;
+			numberOfHD++;
 		}
 		if (session.standardDefVideoURL) {
-			_numberOfSD++;
+			numberOfSD++;
 		}
 		if (session.slidesPDFURL) {
-			_numberOfPDF++;
+			numberOfPDF++;
 		}
 	}
+
+	[self putCount:numberOfHD inCheckbox:self.HDCheckbox];
+	[self putCount:numberOfSD inCheckbox:self.SDCheckbox];
+	[self putCount:numberOfPDF inCheckbox:self.PDFCheckbox];
 }
 
 - (void) putCount:(NSUInteger)count inCheckbox:(NSButton *)checkbox
@@ -238,17 +237,16 @@
 	[self countAvailableFiles];
 
 	// Update UI.
-	[self putCount:_numberOfHD inCheckbox:self.HDCheckbox];
-	[self putCount:_numberOfSD inCheckbox:self.SDCheckbox];
-	[self putCount:_numberOfPDF inCheckbox:self.PDFCheckbox];
 	[self.HDCheckbox setEnabled:YES];
 	[self.SDCheckbox setEnabled:YES];
 	[self.PDFCheckbox setEnabled:YES];
 	[self.downloadButton setEnabled:YES];
 
+	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:0];
+
     [self.gettingSessionInfoSpinner setHidden:YES];
     [self.gettingSessionInfoSpinner stopAnimation:nil];
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"Found %@ sessions", @(_sessions.count)];
+	self.statusTextField.stringValue = [NSString stringWithFormat:@"Found %@ WWDC sessions", @(_sessions.count)];
 }
 
 @end
