@@ -89,7 +89,14 @@
 }
 
 - (void) putNumberCompletedInStatusField {
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ done, %@ failed, %@ remaining", @(_numberCompleted), @(_numberFailed), @(_totalNumberToDownload - _numberCompleted - _numberFailed)];
+	NSString *timeElapsedString = @"";
+
+	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
+		NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
+		timeElapsedString = [NSString stringWithFormat:@", %@", [self stringForTimeInterval:(endTimestamp - _startTimestamp)]];
+	}
+
+	self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ done, %@ failed, %@ remaining%@", @(_numberCompleted), @(_numberFailed), @(_totalNumberToDownload - _numberCompleted - _numberFailed), timeElapsedString];
 }
 
 #pragma mark -
@@ -169,12 +176,9 @@
 	self.downloadProgressBar.doubleValue = _numberCompleted + _numberFailed;
 	if (_numberCompleted + _numberFailed == _totalNumberToDownload) {
 		[self.downloadProgressBar setHidden:YES];
-
-		NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
-		self.statusTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
-	} else {
-		[self putNumberCompletedInStatusField];
 	}
+
+	[self putNumberCompletedInStatusField];
 }
 
 - (NSString *)stringForTimeInterval:(NSTimeInterval)interval
@@ -185,7 +189,7 @@
 	long minutes = remainder / 60;
 	long seconds = remainder % 60;
 
-	return [NSString stringWithFormat:@"Time elapsed: %02ld:%02ld:%02ld", hours, minutes, seconds];
+	return [NSString stringWithFormat:@"%02ld:%02ld:%02ld", hours, minutes, seconds];
 }
 
 - (void) findDownloadsForSession:(WWDCSession *)session {
