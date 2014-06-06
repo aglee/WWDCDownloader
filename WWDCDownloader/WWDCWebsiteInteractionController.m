@@ -109,7 +109,7 @@
 }
 
 - (void) downloadPDFVideoForSession:(WWDCSession *) session {
-	NSURL *sourceURL = session.standardDefVideoURL;
+	NSURL *sourceURL = session.slidesPDFURL;
 	NSString *fileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
 
 	[self downloadFromURL:sourceURL toFileName:fileName];
@@ -191,15 +191,15 @@
 - (void) findDownloadsForSession:(WWDCSession *)session {
 
     if (self.HDCheckbox.state == NSOnState) {
-        [self downloadWithURL:session.highDefVideoURL forSession:session];
+        [self downloadHDVideoForSession:session];
     }
 
     if (self.SDCheckbox.state == NSOnState) {
-        [self downloadWithURL:session.standardDefVideoURL forSession:session];
+        [self downloadSDVideoForSession:session];
     }
 
     if (self.PDFCheckbox.state == NSOnState) {
-        [self downloadWithURL:session.slidesPDFURL forSession:session];
+        [self downloadPDFVideoForSession:session];
     }
 }
 
