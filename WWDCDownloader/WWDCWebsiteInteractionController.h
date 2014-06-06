@@ -16,6 +16,8 @@
 @property (assign) IBOutlet NSButton *downloadButton;
 @property (assign) IBOutlet NSProgressIndicator *downloadProgressBar;
 
+@property (assign) IBOutlet NSTextField *numberOfSessionsField;
+
 - (IBAction) download:(id) sender;
 
 @end

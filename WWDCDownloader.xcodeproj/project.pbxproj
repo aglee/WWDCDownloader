@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		734A3C7819415E3300214C68 /* ALDOMTraverser.m in Sources */ = {isa = PBXBuildFile; fileRef = 734A3C7319415E3300214C68 /* ALDOMTraverser.m */; };
+		734A3C7919415E3300214C68 /* WWDCDOMTraverser.m in Sources */ = {isa = PBXBuildFile; fileRef = 734A3C7519415E3300214C68 /* WWDCDOMTraverser.m */; };
+		734A3C7A19415E3300214C68 /* WWDCSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 734A3C7719415E3300214C68 /* WWDCSession.m */; };
 		92112779176B00C30030AD92 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92112778176B00C30030AD92 /* Cocoa.framework */; };
 		92112783176B00C30030AD92 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92112781176B00C30030AD92 /* InfoPlist.strings */; };
 		92112785176B00C30030AD92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 92112784176B00C30030AD92 /* main.m */; };
@@ -22,6 +25,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		734A3C7219415E3300214C68 /* ALDOMTraverser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ALDOMTraverser.h; sourceTree = "<group>"; };
+		734A3C7319415E3300214C68 /* ALDOMTraverser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ALDOMTraverser.m; sourceTree = "<group>"; };
+		734A3C7419415E3300214C68 /* WWDCDOMTraverser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWDCDOMTraverser.h; sourceTree = "<group>"; };
+		734A3C7519415E3300214C68 /* WWDCDOMTraverser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWDCDOMTraverser.m; sourceTree = "<group>"; };
+		734A3C7619415E3300214C68 /* WWDCSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWDCSession.h; sourceTree = "<group>"; };
+		734A3C7719415E3300214C68 /* WWDCSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWDCSession.m; sourceTree = "<group>"; };
 		92112775176B00C30030AD92 /* WWDCDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WWDCDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92112778176B00C30030AD92 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		9211277B176B00C30030AD92 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -59,6 +68,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		734A3C7B19415E6300214C68 /* Scraping */ = {
+			isa = PBXGroup;
+			children = (
+				921127C9176B9FB60030AD92 /* DOMIteration.m */,
+				921127C8176B9FB60030AD92 /* DOMIteration.h */,
+				734A3C7219415E3300214C68 /* ALDOMTraverser.h */,
+				734A3C7319415E3300214C68 /* ALDOMTraverser.m */,
+				734A3C7419415E3300214C68 /* WWDCDOMTraverser.h */,
+				734A3C7519415E3300214C68 /* WWDCDOMTraverser.m */,
+				734A3C7619415E3300214C68 /* WWDCSession.h */,
+				734A3C7719415E3300214C68 /* WWDCSession.m */,
+			);
+			name = Scraping;
+			sourceTree = "<group>";
+		};
 		9211276C176B00C30030AD92 = {
 			isa = PBXGroup;
 			children = (
@@ -100,13 +124,12 @@
 		9211277E176B00C30030AD92 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				734A3C7B19415E6300214C68 /* Scraping */,
 				9211278B176B00C30030AD92 /* WWDCAppDelegate.m */,
 				9211278A176B00C30030AD92 /* WWDCAppDelegate.h */,
 				921127C4176B8C5E0030AD92 /* WWDCWebsiteInteractionController.m */,
 				921127C3176B8C5E0030AD92 /* WWDCWebsiteInteractionController.h */,
 				921127C6176B8C7A0030AD92 /* WWDCWebsiteInteractionController.xib */,
-				921127C9176B9FB60030AD92 /* DOMIteration.m */,
-				921127C8176B9FB60030AD92 /* DOMIteration.h */,
 				921127CC176BDB6F0030AD92 /* WWDCURLRequest.m */,
 				921127CB176BDB6F0030AD92 /* WWDCURLRequest.h */,
 				9211278D176B00C30030AD92 /* MainMenu.xib */,
@@ -194,9 +217,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				734A3C7819415E3300214C68 /* ALDOMTraverser.m in Sources */,
+				734A3C7A19415E3300214C68 /* WWDCSession.m in Sources */,
 				921127C5176B8C5E0030AD92 /* WWDCWebsiteInteractionController.m in Sources */,
 				92112785176B00C30030AD92 /* main.m in Sources */,
 				9211278C176B00C30030AD92 /* WWDCAppDelegate.m in Sources */,
+				734A3C7919415E3300214C68 /* WWDCDOMTraverser.m in Sources */,
 				921127CD176BDB760030AD92 /* WWDCURLRequest.m in Sources */,
 				921127CA176B9FB60030AD92 /* DOMIteration.m in Sources */,
 			);
