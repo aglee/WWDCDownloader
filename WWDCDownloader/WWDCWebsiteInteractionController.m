@@ -68,7 +68,10 @@
 		[self.HDCheckbox setEnabled:NO];
 		[self.SDCheckbox setEnabled:NO];
 		[self.PDFCheckbox setEnabled:NO];
-		[self.downloadButton setEnabled:NO];
+
+		self.downloadButton.title = @"Quit";
+		self.downloadButton.target = nil;
+		self.downloadButton.action = @selector(terminate:);
 
 		[self.downloadProgressBar setHidden:NO];
 		[self.downloadProgressBar startAnimation:nil];
@@ -122,6 +125,10 @@
 - (void) incrementProgressBar
 {
 	self.downloadProgressBar.doubleValue++;
+	if (self.downloadProgressBar.doubleValue == self.downloadProgressBar.maxValue) {
+		[self.downloadProgressBar setHidden:YES];
+	}
+
 	[self putNumberCompletedInStatusField];
 }
 
