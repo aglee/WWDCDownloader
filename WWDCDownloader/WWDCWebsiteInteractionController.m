@@ -12,8 +12,15 @@
 #import "WWDCSession.h"
 #import <WebKit/WebKit.h>
 
+@interface WWDCWebsiteInteractionController ()
+@property (nonatomic, strong) NSMutableArray *sessions;
+@property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
+@property (nonatomic, assign) NSUInteger numberCompleted;
+@property (nonatomic, assign) NSUInteger numberFailed;
+@property (nonatomic, assign) NSUInteger numberRemaining;
+@end
+
 @implementation WWDCWebsiteInteractionController {
-	NSArray *_sessions;  // WWDCSession
 	NSTimeInterval _startTimestamp;
 }
 
@@ -39,26 +46,24 @@
     [self.PDFCheckbox setEnabled:NO];
     [self.downloadButton setEnabled:NO];
 
-	[self.gettingSessionInfoSpinner setHidden:NO];
     [self.gettingSessionInfoSpinner startAnimation:nil];
-	[self.downloadProgressBar setHidden:YES];
 }
 
 - (NSInteger)totalNumberToDownload {
-	return self.numberAlreadyDownloaded + self.numberCompleted + self.numberFailed + self.numberRemaining;
+	return self.numberCompleted + self.numberFailed + self.numberRemaining;
 }
 
 #pragma mark -
 
 - (IBAction) download:(id) sender {
-	if (_sessions.count == 0) {
+	if (self.sessions.count == 0) {
 		return;
 	}
 
 	_startTimestamp = [[NSDate date] timeIntervalSince1970];
 	self.numberAlreadyDownloaded = self.numberCompleted = self.numberFailed = self.numberRemaining = 0;
 
-    for (WWDCSession *session in _sessions) {
+    for (WWDCSession *session in self.sessions) {
 		// Updates numberAlreadyDownloaded and numberRemaining.
         [self findDownloadsForSession:session];
     }
@@ -68,9 +73,15 @@
 	self.downloadProgressBar.maxValue = self.totalNumberToDownload;
 	[self updateDownloadProgressBar];
 
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"Downloading %@ files", @(self.totalNumberToDownload)];
+	if (self.totalNumberToDownload == 0) {
+		if (self.numberAlreadyDownloaded == 0) {
+			self.statusTextField.stringValue = @"No files selected for download.";
+		} else {
+			self.statusTextField.stringValue = [NSString stringWithFormat:@"All %@ files already downloaded.", @(self.numberAlreadyDownloaded)];
+		}
+	} else {
+		self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ already downloaded. Downloading %@ files", @(self.numberAlreadyDownloaded), @(self.totalNumberToDownload)];
 
-	if (self.totalNumberToDownload > 0) {
 		[self.HDCheckbox setEnabled:NO];
 		[self.SDCheckbox setEnabled:NO];
 		[self.PDFCheckbox setEnabled:NO];
@@ -80,7 +91,6 @@
 //		self.downloadButton.target = nil;
 //		self.downloadButton.action = @selector(terminate:);
 
-		[self.downloadProgressBar setHidden:NO];
 		[self.downloadProgressBar startAnimation:nil];
 	}
 }
@@ -160,10 +170,9 @@
 
 - (void) updateDownloadProgressBar
 {
+	self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
 	if (self.numberRemaining == 0) {
-		[self.downloadProgressBar setHidden:YES];
-	} else {
-		self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
+		[self.downloadProgressBar stopAnimation:nil];
 	}
 	[self updateTimeElapsedField];
 }
@@ -204,7 +213,7 @@
 	NSInteger numberOfSD = 0;
 	NSInteger numberOfPDF = 0;
 
-	for (WWDCSession *session in _sessions) {
+	for (WWDCSession *session in self.sessions) {
 		if (session.highDefVideoURL) {
 			numberOfHD++;
 		}
@@ -233,7 +242,7 @@
 	// Scrape the DOM.
     WWDCDOMTraverser *domTraverser = [[WWDCDOMTraverser alloc] init];
     [domTraverser traverseRootElement:self.webView.mainFrameDocument.body];
-	_sessions = domTraverser.sessions;
+	self.sessions = domTraverser.sessions;
 	[self countAvailableFiles];
 
 	// Update UI.
@@ -244,9 +253,8 @@
 
 	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:0];
 
-    [self.gettingSessionInfoSpinner setHidden:YES];
     [self.gettingSessionInfoSpinner stopAnimation:nil];
-	self.statusTextField.stringValue = [NSString stringWithFormat:@"Found %@ WWDC sessions", @(_sessions.count)];
+	self.statusTextField.stringValue = @"Ready to download selected files.";
 }
 
 @end

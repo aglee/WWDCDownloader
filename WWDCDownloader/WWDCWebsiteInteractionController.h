@@ -22,10 +22,12 @@
 
 @property (assign) IBOutlet NSTextField *timeElapsedTextField;
 
-@property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
-@property (nonatomic, assign) NSUInteger numberCompleted;
-@property (nonatomic, assign) NSUInteger numberFailed;
-@property (nonatomic, assign) NSUInteger numberRemaining;
+@property (nonatomic, strong, readonly) NSArray *sessions;  // WWDCSession
+
+@property (nonatomic, assign, readonly) NSUInteger numberAlreadyDownloaded;
+@property (nonatomic, assign, readonly) NSUInteger numberCompleted;
+@property (nonatomic, assign, readonly) NSUInteger numberFailed;
+@property (nonatomic, assign, readonly) NSUInteger numberRemaining;
 
 - (IBAction) download:(id) sender;
 
