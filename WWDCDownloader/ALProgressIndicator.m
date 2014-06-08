@@ -25,6 +25,12 @@
 
 - (id)_ALProgressIndicator_commonInit
 {
+	// Needs to be layer-backed in order for overriding drawRect: to work.
+	// Has something to do with the fact that NSProgressIndicator doesn't
+	// use drawRect: to draw its animation.  When I was debugging drawing,
+	// this is where I got the clue that we need to be layer-backed:
+	// <http://stackoverflow.com/questions/18464814/subclass-nsprogressindicator>
+	self.wantsLayer = YES;
 	self.bezeled = NO;
 	self.displayedWhenStopped = YES;
 	self.indeterminate = NO;
@@ -48,7 +54,6 @@
 {
 	[super stopAnimation:sender];
 	self.isAnimating = NO;
-	[self setNeedsDisplay:YES];
 }
 
 #pragma mark - NSView methods
@@ -59,7 +64,7 @@
 		[super drawRect:dirtyRect];
 	} else {
 		[self.backgroundColor set];
-		NSRectFill(self.bounds);
+		NSRectFill(dirtyRect);
 	}
 }
 
