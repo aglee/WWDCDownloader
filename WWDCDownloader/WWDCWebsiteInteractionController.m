@@ -12,8 +12,20 @@
 #import "WWDCSession.h"
 #import <WebKit/WebKit.h>
 
+typedef enum {
+	GettingSessionInfo = 1 << 0,
+	ReadyToDownload = 1 << 1,
+	Downloading = 1 << 2,
+	FinishedDownloading = 1 << 3,
+} WWDCDownloaderState;
+
 @interface WWDCWebsiteInteractionController ()
 @property (nonatomic, strong) NSMutableArray *sessions;
+
+@property (nonatomic, assign) NSUInteger numberOfHDFiles;
+@property (nonatomic, assign) NSUInteger numberOfSDFiles;
+@property (nonatomic, assign) NSUInteger numberOfPDFFiles;
+
 @property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
 @property (nonatomic, assign) NSUInteger numberCompleted;
 @property (nonatomic, assign) NSUInteger numberFailed;
@@ -33,20 +45,7 @@
 - (void) awakeFromNib {
 	[super awakeFromNib];
 
-	NSURL *WWDCVideosURL = [NSURL URLWithString:@"https://developer.apple.com/videos/wwdc/2014/"];
-
-	[self.webView setHidden:YES];
-	[self.webView.mainFrame loadRequest:[NSURLRequest requestWithURL:WWDCVideosURL]];
-
-	self.webView.frameLoadDelegate = self;
-
-	// Update UI.
-    [self.HDCheckbox setEnabled:NO];
-    [self.SDCheckbox setEnabled:NO];
-    [self.PDFCheckbox setEnabled:NO];
-    [self.downloadButton setEnabled:NO];
-
-    [self.gettingSessionInfoSpinner startAnimation:nil];
+	[self refreshSessionInfo:nil];
 }
 
 - (NSInteger)totalNumberToDownload {
@@ -54,6 +53,16 @@
 }
 
 #pragma mark -
+
+- (IBAction) refreshSessionInfo:(id) sender {
+	NSURL *WWDCVideosURL = [NSURL URLWithString:@"https://developer.apple.com/videos/wwdc/2014/"];
+
+	self.sessions = nil;
+	[self.webView.mainFrame loadRequest:[NSURLRequest requestWithURL:WWDCVideosURL]];
+
+	// Update UI.
+	[self updateControlsForGettingSessionInfo];
+}
 
 - (IBAction) download:(id) sender {
 	if (self.sessions.count == 0) {
@@ -65,58 +74,79 @@
 
     for (WWDCSession *session in self.sessions) {
 		// Updates numberAlreadyDownloaded and numberRemaining.
-        [self findDownloadsForSession:session];
+        [self queueDownloadsForSession:session];
     }
 
 	// Update UI.
+	[self updateControlsForDidStartDownloading];
+}
+
+#pragma mark -
+
+// We're waiting for a response with WWDC session info from apple.com.
+- (void)updateControlsForGettingSessionInfo
+{
+	self.statusTextField.stringValue = @"Getting WWDC session info from apple.com...";
+    [self.gettingSessionInfoSpinner startAnimation:nil];
+
+    [self.HDCheckbox setEnabled:NO];
+    [self.SDCheckbox setEnabled:NO];
+    [self.PDFCheckbox setEnabled:NO];
+
+	[self.refreshSessionsButton setEnabled:NO];
+    [self.downloadButton setEnabled:NO];
+}
+
+// We've received and sorted through all the session info, and the
+// user can now choose what files to download.
+- (void)updateControlsForReadyToDownload
+{
+	self.statusTextField.stringValue = @"Ready to download selected files.";
+    [self.gettingSessionInfoSpinner stopAnimation:nil];
+	[self.downloadProgressBar stopAnimation:nil];
+
+	[self.HDCheckbox setEnabled:YES];
+	[self.SDCheckbox setEnabled:YES];
+	[self.PDFCheckbox setEnabled:YES];
+
+	[self.refreshSessionsButton setEnabled:YES];
+	[self.downloadButton setEnabled:YES];
+
+	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:0];
+}
+
+// The user just asked us to start downloading.
+- (void)updateControlsForDidStartDownloading
+{
 	self.downloadProgressBar.minValue = 0;
 	self.downloadProgressBar.maxValue = self.totalNumberToDownload;
-	[self updateDownloadProgressBar];
+	self.downloadProgressBar.doubleValue = 0;
 
 	if (self.totalNumberToDownload == 0) {
 		if (self.numberAlreadyDownloaded == 0) {
-			self.statusTextField.stringValue = @"No files selected for download.";
+			self.statusTextField.stringValue = @"No files to download.";
 		} else {
 			self.statusTextField.stringValue = [NSString stringWithFormat:@"All %@ files already downloaded.", @(self.numberAlreadyDownloaded)];
 		}
 	} else {
-		self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ already downloaded. Downloading %@ files", @(self.numberAlreadyDownloaded), @(self.totalNumberToDownload)];
+		if (self.numberAlreadyDownloaded == 0) {
+			self.statusTextField.stringValue = [NSString stringWithFormat:@"Downloading %@ files.", @(self.totalNumberToDownload)];
+		} else {
+			self.statusTextField.stringValue = [NSString stringWithFormat:@"%@ already downloaded. Downloading %@ files.", @(self.numberAlreadyDownloaded), @(self.totalNumberToDownload)];
+		}
+
+		[self.downloadProgressBar startAnimation:nil];
 
 		[self.HDCheckbox setEnabled:NO];
 		[self.SDCheckbox setEnabled:NO];
 		[self.PDFCheckbox setEnabled:NO];
 
+		[self.refreshSessionsButton setEnabled:NO];
 		[self.downloadButton setEnabled:NO];
-//		self.downloadButton.title = @"Quit";
-//		self.downloadButton.target = nil;
-//		self.downloadButton.action = @selector(terminate:);
-
-		[self.downloadProgressBar startAnimation:nil];
 	}
 }
 
 #pragma mark -
-
-- (void) downloadHDVideoForSession:(WWDCSession *) session {
-	NSURL *sourceURL = session.highDefVideoURL;
-	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (HD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
-
-	[self downloadFromURL:sourceURL toFileName:fileName];
-}
-
-- (void) downloadSDVideoForSession:(WWDCSession *) session {
-	NSURL *sourceURL = session.standardDefVideoURL;
-	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (SD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
-
-	[self downloadFromURL:sourceURL toFileName:fileName];
-}
-
-- (void) downloadPDFVideoForSession:(WWDCSession *) session {
-	NSURL *sourceURL = session.slidesPDFURL;
-	NSString *fileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
-
-	[self downloadFromURL:sourceURL toFileName:fileName];
-}
 
 - (void) downloadFromURL:(NSURL *)sourceURL toFileName:(NSString *)fileName {
     if (sourceURL == nil) {
@@ -161,20 +191,42 @@
 		NSLog(@"failed downloading \"%@\" to \"%@\"", sourceURL, saveFilePath);
 		self.numberFailed++;
 		self.numberRemaining--;
-		[strongSelf updateDownloadProgressBar];
 		[[NSFileManager defaultManager] removeItemAtPath:tempFilePath error:NULL];
+		[strongSelf updateDownloadProgressBar];
 	};
-    
+
 	[[NSOperationQueue requestQueue] addOperation:request];
+}
+
+- (void) downloadHDVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.highDefVideoURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (HD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
+}
+
+- (void) downloadSDVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.standardDefVideoURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@ (SD).%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
+}
+
+- (void) downloadPDFVideoForSession:(WWDCSession *) session {
+	NSURL *sourceURL = session.slidesPDFURL;
+	NSString *fileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
+
+	[self downloadFromURL:sourceURL toFileName:fileName];
 }
 
 - (void) updateDownloadProgressBar
 {
 	self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
-	if (self.numberRemaining == 0) {
-		[self.downloadProgressBar stopAnimation:nil];
-	}
 	[self updateTimeElapsedField];
+
+	if (self.numberRemaining == 0) {
+		[self updateControlsForReadyToDownload];
+	}
 }
 
 - (void) updateTimeElapsedField {
@@ -193,7 +245,7 @@
 	return [NSString stringWithFormat:@"%02ld:%02ld:%02ld", hours, minutes, seconds];
 }
 
-- (void) findDownloadsForSession:(WWDCSession *)session {
+- (void) queueDownloadsForSession:(WWDCSession *)session {
 
     if (self.HDCheckbox.state == NSOnState) {
         [self downloadHDVideoForSession:session];
@@ -209,9 +261,9 @@
 }
 
 - (void) countAvailableFiles {
-	NSInteger numberOfHD = 0;
-	NSInteger numberOfSD = 0;
-	NSInteger numberOfPDF = 0;
+	NSUInteger numberOfHD = 0;
+	NSUInteger numberOfSD = 0;
+	NSUInteger numberOfPDF = 0;
 
 	for (WWDCSession *session in self.sessions) {
 		if (session.highDefVideoURL) {
@@ -225,20 +277,18 @@
 		}
 	}
 
-	[self putCount:numberOfHD inCheckbox:self.HDCheckbox];
-	[self putCount:numberOfSD inCheckbox:self.SDCheckbox];
-	[self putCount:numberOfPDF inCheckbox:self.PDFCheckbox];
-}
-
-- (void) putCount:(NSUInteger)count inCheckbox:(NSButton *)checkbox
-{
-	checkbox.title = [NSString stringWithFormat:@"%@ (%@)", checkbox.title, @(count)];
-	[checkbox sizeToFit];
+	self.HDCheckbox.title = [NSString stringWithFormat:@"Download HD videos (%@)", @(numberOfHD)];
+	self.SDCheckbox.title = [NSString stringWithFormat:@"Download SD videos (%@)", @(numberOfSD)];
+	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF videos (%@)", @(numberOfPDF)];
 }
 
 #pragma mark - <WebFrameLoadDelegate> methods
 
 - (void) webView:(WebView *) sender didFinishLoadForFrame:(WebFrame *) frame {
+	if (frame != self.webView.mainFrame) {
+		return;
+	}
+
 	// Scrape the DOM.
     WWDCDOMTraverser *domTraverser = [[WWDCDOMTraverser alloc] init];
     [domTraverser traverseRootElement:self.webView.mainFrameDocument.body];
@@ -246,15 +296,7 @@
 	[self countAvailableFiles];
 
 	// Update UI.
-	[self.HDCheckbox setEnabled:YES];
-	[self.SDCheckbox setEnabled:YES];
-	[self.PDFCheckbox setEnabled:YES];
-	[self.downloadButton setEnabled:YES];
-
-	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:0];
-
-    [self.gettingSessionInfoSpinner stopAnimation:nil];
-	self.statusTextField.stringValue = @"Ready to download selected files.";
+	[self updateControlsForReadyToDownload];
 }
 
 @end

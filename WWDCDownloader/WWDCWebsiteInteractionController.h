@@ -17,6 +17,7 @@
 @property (assign) IBOutlet NSTextField *statusTextField;
 @property (assign) IBOutlet NSProgressIndicator *gettingSessionInfoSpinner;
 
+@property (assign) IBOutlet NSButton *refreshSessionsButton;
 @property (assign) IBOutlet NSButton *downloadButton;
 @property (assign) IBOutlet NSProgressIndicator *downloadProgressBar;
 

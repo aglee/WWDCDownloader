@@ -15,6 +15,7 @@
                 <outlet property="downloadButton" destination="NZy-fD-Iji" id="nSj-tc-pSv"/>
                 <outlet property="downloadProgressBar" destination="Ndt-EH-dNU" id="b3V-fW-pst"/>
                 <outlet property="gettingSessionInfoSpinner" destination="p5I-mV-jsQ" id="qvM-ad-tK6"/>
+                <outlet property="refreshSessionsButton" destination="dh3-iD-j9i" id="baT-Vp-atl"/>
                 <outlet property="statusTextField" destination="SnB-Qk-nlg" id="wgl-nn-fKf"/>
                 <outlet property="timeElapsedTextField" destination="0VY-d2-zad" id="aVx-7Y-fN7"/>
                 <outlet property="webView" destination="xep-Fu-xaN" id="PpM-oc-Lag"/>
@@ -25,23 +26,23 @@
         <customObject id="-3" userLabel="Application"/>
         <window title="WWDCDownloader 2014" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="uGQ-0R-zCI">
             <windowStyleMask key="styleMask" titled="YES" miniaturizable="YES"/>
-            <rect key="contentRect" x="335" y="390" width="502" height="231"/>
+            <rect key="contentRect" x="335" y="390" width="502" height="215"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1058"/>
             <view key="contentView" id="sRh-du-LW5">
-                <rect key="frame" x="0.0" y="0.0" width="502" height="231"/>
+                <rect key="frame" x="0.0" y="0.0" width="502" height="215"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="SnB-Qk-nlg">
-                        <rect key="frame" x="18" y="199" width="466" height="17"/>
+                        <rect key="frame" x="18" y="183" width="466" height="17"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Getting session info from apple.com..." id="4Pq-wn-QAH">
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Getting WWDC session info from apple.com..." id="4Pq-wn-QAH">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="yLV-P0-VyM">
-                        <rect key="frame" x="342" y="160" width="77" height="17"/>
+                        <rect key="frame" x="342" y="144" width="77" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Completed:" id="XWK-W7-9em">
                             <font key="font" metaFont="system"/>
@@ -50,8 +51,8 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="kDJ-Vd-5nQ">
-                        <rect key="frame" x="18" y="160" width="202" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="18" y="144" width="202" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Found 0 WWDC sessions." id="6z1-WL-vIv">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -67,7 +68,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="adC-tW-Iq7">
-                        <rect key="frame" x="374" y="135" width="45" height="17"/>
+                        <rect key="frame" x="374" y="119" width="45" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Failed:" id="dJK-e1-3lX">
                             <font key="font" metaFont="system"/>
@@ -76,7 +77,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="b8v-ye-vVv">
-                        <rect key="frame" x="344" y="110" width="75" height="17"/>
+                        <rect key="frame" x="344" y="94" width="75" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Remaining:" id="R49-2L-5Ed">
                             <font key="font" metaFont="system"/>
@@ -85,11 +86,11 @@
                         </textFieldCell>
                     </textField>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="p5I-mV-jsQ">
-                        <rect key="frame" x="466" y="199" width="16" height="16"/>
+                        <rect key="frame" x="466" y="183" width="16" height="16"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                     </progressIndicator>
                     <button id="0Wh-Hl-Cja">
-                        <rect key="frame" x="18" y="133" width="202" height="18"/>
+                        <rect key="frame" x="18" y="117" width="202" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Download HD videos" bezelStyle="regularSquare" imagePosition="left" inset="2" id="cjm-bq-xEA">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -97,7 +98,7 @@
                         </buttonCell>
                     </button>
                     <button id="tdz-K1-rIS">
-                        <rect key="frame" x="18" y="83" width="202" height="18"/>
+                        <rect key="frame" x="18" y="67" width="202" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Download PDFs" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bIJ-Kc-XfD">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -105,7 +106,7 @@
                         </buttonCell>
                     </button>
                     <button id="EZy-Ep-Uvm">
-                        <rect key="frame" x="18" y="108" width="202" height="18"/>
+                        <rect key="frame" x="18" y="92" width="202" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Download SD videos" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="unc-vn-mVj">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -113,9 +114,9 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" id="NZy-fD-Iji">
-                        <rect key="frame" x="200" y="13" width="103" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Download" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="o4o-7T-gMz">
+                        <rect key="frame" x="297" y="13" width="191" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Download Selected Files" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="o4o-7T-gMz">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -123,8 +124,19 @@
                             <action selector="download:" target="-2" id="waN-aq-q9q"/>
                         </connections>
                     </button>
+                    <button verticalHuggingPriority="750" id="dh3-iD-j9i">
+                        <rect key="frame" x="131" y="13" width="166" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Refresh Session Info" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="z2n-Ak-7Oq">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="refreshSessionInfo:" target="-2" id="rfG-nR-E8W"/>
+                        </connections>
+                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Fxd-fI-xvB">
-                        <rect key="frame" x="422" y="160" width="62" height="17"/>
+                        <rect key="frame" x="422" y="144" width="62" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="0" id="enJ-Hn-iAr">
                             <font key="font" metaFont="system"/>
@@ -136,7 +148,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="0vL-wx-dVk">
-                        <rect key="frame" x="422" y="135" width="62" height="17"/>
+                        <rect key="frame" x="422" y="119" width="62" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="0" id="Kqe-Tk-2f6">
                             <font key="font" metaFont="system"/>
@@ -148,7 +160,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="7Mn-es-Plb">
-                        <rect key="frame" x="422" y="110" width="62" height="17"/>
+                        <rect key="frame" x="422" y="94" width="62" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="0" id="lSX-eA-S7C">
                             <font key="font" metaFont="system"/>
@@ -160,7 +172,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="djR-wq-lf4">
-                        <rect key="frame" x="328" y="85" width="91" height="17"/>
+                        <rect key="frame" x="328" y="69" width="91" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Time elapsed:" id="ylT-gO-eBW">
                             <font key="font" metaFont="system"/>
@@ -169,7 +181,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="0VY-d2-zad">
-                        <rect key="frame" x="422" y="85" width="62" height="17"/>
+                        <rect key="frame" x="422" y="69" width="62" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="00:00:00" id="9SC-mq-bQh">
                             <font key="font" metaFont="system"/>
@@ -178,14 +190,14 @@
                         </textFieldCell>
                     </textField>
                     <customView id="Ndt-EH-dNU" customClass="ALProgressIndicator">
-                        <rect key="frame" x="20" y="189" width="462" height="2"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="173" width="462" height="2"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     </customView>
                 </subviews>
             </view>
             <connections>
                 <outlet property="delegate" destination="-2" id="KtR-5K-w1D"/>
-                <outlet property="initialFirstResponder" destination="xep-Fu-xaN" id="b5S-xi-1o2"/>
+                <outlet property="initialFirstResponder" destination="NZy-fD-Iji" id="oVU-cE-VCC"/>
             </connections>
         </window>
         <webView hidden="YES" maintainsBackForwardList="NO" id="xep-Fu-xaN">
@@ -194,7 +206,15 @@
             <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO" javaScriptCanOpenWindowsAutomatically="NO" loadsImagesAutomatically="NO" allowsAnimatedImages="NO" allowsAnimatedImageLooping="NO">
                 <nil key="identifier"/>
             </webPreferences>
+            <connections>
+                <outlet property="frameLoadDelegate" destination="-2" id="abo-oX-PLx"/>
+            </connections>
         </webView>
         <userDefaultsController representsSharedInstance="YES" id="K65-Xj-ue2"/>
+        <objectController id="9FL-Hw-pFM">
+            <connections>
+                <binding destination="-2" name="contentObject" keyPath="self" id="YbX-8B-KAD"/>
+            </connections>
+        </objectController>
     </objects>
 </document>
