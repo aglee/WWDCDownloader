@@ -12,19 +12,8 @@
 #import "WWDCSession.h"
 #import <WebKit/WebKit.h>
 
-typedef enum {
-	GettingSessionInfo = 1 << 0,
-	ReadyToDownload = 1 << 1,
-	Downloading = 1 << 2,
-	FinishedDownloading = 1 << 3,
-} WWDCDownloaderState;
-
 @interface WWDCWebsiteInteractionController ()
 @property (nonatomic, strong) NSMutableArray *sessions;
-
-@property (nonatomic, assign) NSUInteger numberOfHDFiles;
-@property (nonatomic, assign) NSUInteger numberOfSDFiles;
-@property (nonatomic, assign) NSUInteger numberOfPDFFiles;
 
 @property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
 @property (nonatomic, assign) NSUInteger numberCompleted;
@@ -40,19 +29,19 @@ typedef enum {
 	return (self = [super initWithWindowNibName:@"WWDCWebsiteInteractionController"]);
 }
 
-#pragma mark -
-
 - (void) awakeFromNib {
 	[super awakeFromNib];
 
 	[self refreshSessionInfo:nil];
 }
 
+#pragma mark - Getters and setters
+
 - (NSInteger)totalNumberToDownload {
 	return self.numberCompleted + self.numberFailed + self.numberRemaining;
 }
 
-#pragma mark -
+#pragma mark - Action methods
 
 - (IBAction) refreshSessionInfo:(id) sender {
 	NSURL *WWDCVideosURL = [NSURL URLWithString:@"https://developer.apple.com/videos/wwdc/2014/"];
@@ -81,7 +70,24 @@ typedef enum {
 	[self updateControlsForDidStartDownloading];
 }
 
-#pragma mark -
+#pragma mark - WebFrameLoadDelegate methods
+
+- (void) webView:(WebView *) sender didFinishLoadForFrame:(WebFrame *) frame {
+	if (frame != self.webView.mainFrame) {
+		return;
+	}
+
+	// Scrape the DOM.
+    WWDCDOMTraverser *domTraverser = [[WWDCDOMTraverser alloc] init];
+    [domTraverser traverseRootElement:self.webView.mainFrameDocument.body];
+	self.sessions = domTraverser.sessions;
+
+	// Update UI.
+	[self updateCountsOfAvailableFiles];
+	[self updateControlsForReadyToDownload];
+}
+
+#pragma mark - Private methods - updating the UI
 
 // We're waiting for a response with WWDC session info from apple.com.
 - (void)updateControlsForGettingSessionInfo
@@ -146,7 +152,70 @@ typedef enum {
 	}
 }
 
-#pragma mark -
+- (void) updateDownloadProgressBar
+{
+	self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
+	[self updateTimeElapsedField];
+
+	if (self.numberRemaining == 0) {
+		[self updateControlsForReadyToDownload];
+	}
+}
+
+- (void) updateCountsOfAvailableFiles {
+	NSUInteger numberOfHD = 0;
+	NSUInteger numberOfSD = 0;
+	NSUInteger numberOfPDF = 0;
+
+	for (WWDCSession *session in self.sessions) {
+		if (session.highDefVideoURL) {
+			numberOfHD++;
+		}
+		if (session.standardDefVideoURL) {
+			numberOfSD++;
+		}
+		if (session.slidesPDFURL) {
+			numberOfPDF++;
+		}
+	}
+
+	self.HDCheckbox.title = [NSString stringWithFormat:@"Download HD videos (%@)", @(numberOfHD)];
+	self.SDCheckbox.title = [NSString stringWithFormat:@"Download SD videos (%@)", @(numberOfSD)];
+	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF videos (%@)", @(numberOfPDF)];
+}
+
+- (void) updateTimeElapsedField {
+	NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
+	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
+}
+
+- (NSString *)stringForTimeInterval:(NSTimeInterval)interval
+{
+	long totalSeconds = interval;
+	long hours = totalSeconds / (60*60);
+	long remainder = totalSeconds % (60*60);
+	long minutes = remainder / 60;
+	long seconds = remainder % 60;
+
+	return [NSString stringWithFormat:@"%02ld:%02ld:%02ld", hours, minutes, seconds];
+}
+
+#pragma mark - Private methods - queuing downloads
+
+- (void) queueDownloadsForSession:(WWDCSession *)session {
+
+    if (self.HDCheckbox.state == NSOnState) {
+        [self downloadHDVideoForSession:session];
+    }
+
+    if (self.SDCheckbox.state == NSOnState) {
+        [self downloadSDVideoForSession:session];
+    }
+
+    if (self.PDFCheckbox.state == NSOnState) {
+        [self downloadPDFVideoForSession:session];
+    }
+}
 
 - (void) downloadFromURL:(NSURL *)sourceURL toFileName:(NSString *)fileName {
     if (sourceURL == nil) {
@@ -217,86 +286,6 @@ typedef enum {
 	NSString *fileName = [NSString stringWithFormat:@"%@ %@.%@", @(session.sessionNumber), session.title, sourceURL.pathExtension];
 
 	[self downloadFromURL:sourceURL toFileName:fileName];
-}
-
-- (void) updateDownloadProgressBar
-{
-	self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
-	[self updateTimeElapsedField];
-
-	if (self.numberRemaining == 0) {
-		[self updateControlsForReadyToDownload];
-	}
-}
-
-- (void) updateTimeElapsedField {
-	NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
-	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
-}
-
-- (NSString *)stringForTimeInterval:(NSTimeInterval)interval
-{
-	long totalSeconds = interval;
-	long hours = totalSeconds / (60*60);
-	long remainder = totalSeconds % (60*60);
-	long minutes = remainder / 60;
-	long seconds = remainder % 60;
-
-	return [NSString stringWithFormat:@"%02ld:%02ld:%02ld", hours, minutes, seconds];
-}
-
-- (void) queueDownloadsForSession:(WWDCSession *)session {
-
-    if (self.HDCheckbox.state == NSOnState) {
-        [self downloadHDVideoForSession:session];
-    }
-
-    if (self.SDCheckbox.state == NSOnState) {
-        [self downloadSDVideoForSession:session];
-    }
-
-    if (self.PDFCheckbox.state == NSOnState) {
-        [self downloadPDFVideoForSession:session];
-    }
-}
-
-- (void) countAvailableFiles {
-	NSUInteger numberOfHD = 0;
-	NSUInteger numberOfSD = 0;
-	NSUInteger numberOfPDF = 0;
-
-	for (WWDCSession *session in self.sessions) {
-		if (session.highDefVideoURL) {
-			numberOfHD++;
-		}
-		if (session.standardDefVideoURL) {
-			numberOfSD++;
-		}
-		if (session.slidesPDFURL) {
-			numberOfPDF++;
-		}
-	}
-
-	self.HDCheckbox.title = [NSString stringWithFormat:@"Download HD videos (%@)", @(numberOfHD)];
-	self.SDCheckbox.title = [NSString stringWithFormat:@"Download SD videos (%@)", @(numberOfSD)];
-	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF videos (%@)", @(numberOfPDF)];
-}
-
-#pragma mark - <WebFrameLoadDelegate> methods
-
-- (void) webView:(WebView *) sender didFinishLoadForFrame:(WebFrame *) frame {
-	if (frame != self.webView.mainFrame) {
-		return;
-	}
-
-	// Scrape the DOM.
-    WWDCDOMTraverser *domTraverser = [[WWDCDOMTraverser alloc] init];
-    [domTraverser traverseRootElement:self.webView.mainFrameDocument.body];
-	self.sessions = domTraverser.sessions;
-	[self countAvailableFiles];
-
-	// Update UI.
-	[self updateControlsForReadyToDownload];
 }
 
 @end
