@@ -194,7 +194,7 @@
 
 	self.HDCheckbox.title = [NSString stringWithFormat:@"Download HD videos (%@)", @(numberOfHD)];
 	self.SDCheckbox.title = [NSString stringWithFormat:@"Download SD videos (%@)", @(numberOfSD)];
-	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF videos (%@)", @(numberOfPDF)];
+	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF files (%@)", @(numberOfPDF)];
 }
 
 - (void) updateTimeElapsedField:(NSNotification *)note {
