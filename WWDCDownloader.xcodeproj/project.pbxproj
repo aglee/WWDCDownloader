@@ -184,7 +184,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = WWDC;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 92112770176B00C30030AD92 /* Build configuration list for PBXProject "WWDCDownloader" */;
 			compatibilityVersion = "Xcode 3.2";
