@@ -161,12 +161,12 @@
 
 - (BOOL)_looksLikeHDVideo:(NSURL *)url
 {
-	return [url.pathExtension isEqualToString:@"mov"] && ([url.lastPathComponent rangeOfString:@"_hd_"].location != NSNotFound);
+	return [url.pathExtension isEqualToString:@"mov"] && ([url.lastPathComponent rangeOfString:@"_hd"].location != NSNotFound);
 }
 
 - (BOOL)_looksLikeSDVideo:(NSURL *)url
 {
-	return [url.pathExtension isEqualToString:@"mov"] && ([url.lastPathComponent rangeOfString:@"_sd_"].location != NSNotFound);
+	return [url.pathExtension isEqualToString:@"mov"] && ([url.lastPathComponent rangeOfString:@"_sd"].location != NSNotFound);
 }
 
 - (BOOL)_looksLikePDF:(NSURL *)url
