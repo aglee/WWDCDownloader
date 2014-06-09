@@ -13,12 +13,16 @@
 #import <WebKit/WebKit.h>
 
 @interface WWDCWebsiteInteractionController ()
+
 @property (nonatomic, strong) NSMutableArray *sessions;
 
 @property (nonatomic, assign) NSUInteger numberAlreadyDownloaded;
 @property (nonatomic, assign) NSUInteger numberCompleted;
 @property (nonatomic, assign) NSUInteger numberFailed;
 @property (nonatomic, assign) NSUInteger numberRemaining;
+
+@property (nonatomic, strong) NSTimer *downloadTimer;
+
 @end
 
 @implementation WWDCWebsiteInteractionController {
@@ -124,6 +128,8 @@
 // The user just asked us to start downloading.
 - (void)updateControlsForDidStartDownloading
 {
+	self.downloadTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateTimeElapsedField:) userInfo:nil repeats:YES];
+
 	self.downloadProgressBar.minValue = 0;
 	self.downloadProgressBar.maxValue = self.totalNumberToDownload;
 	self.downloadProgressBar.doubleValue = 0;
@@ -152,13 +158,20 @@
 	}
 }
 
+- (void) updateControlsForFinishedDownloading {
+	[self updateControlsForReadyToDownload];
+	[self updateTimeElapsedField:nil];
+
+	[self.downloadTimer invalidate];
+	self.downloadTimer = nil;
+}
+
 - (void) updateDownloadProgressBar
 {
 	self.downloadProgressBar.doubleValue = self.totalNumberToDownload - self.numberRemaining;
-	[self updateTimeElapsedField];
 
 	if (self.numberRemaining == 0) {
-		[self updateControlsForReadyToDownload];
+		[self updateControlsForFinishedDownloading];
 	}
 }
 
@@ -184,7 +197,7 @@
 	self.PDFCheckbox.title = [NSString stringWithFormat:@"Download PDF videos (%@)", @(numberOfPDF)];
 }
 
-- (void) updateTimeElapsedField {
+- (void) updateTimeElapsedField:(NSNotification *)note {
 	NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
 	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
 }
