@@ -74,8 +74,8 @@
 		734A3C7B19415E6300214C68 /* Scraping */ = {
 			isa = PBXGroup;
 			children = (
-				921127C9176B9FB60030AD92 /* DOMIteration.m */,
 				921127C8176B9FB60030AD92 /* DOMIteration.h */,
+				921127C9176B9FB60030AD92 /* DOMIteration.m */,
 				734A3C7219415E3300214C68 /* ALDOMTraverser.h */,
 				734A3C7319415E3300214C68 /* ALDOMTraverser.m */,
 				734A3C7419415E3300214C68 /* WWDCDOMTraverser.h */,
@@ -129,13 +129,13 @@
 			isa = PBXGroup;
 			children = (
 				734A3C7B19415E6300214C68 /* Scraping */,
-				9211278B176B00C30030AD92 /* WWDCAppDelegate.m */,
 				9211278A176B00C30030AD92 /* WWDCAppDelegate.h */,
-				921127C4176B8C5E0030AD92 /* WWDCWebsiteInteractionController.m */,
+				9211278B176B00C30030AD92 /* WWDCAppDelegate.m */,
 				921127C3176B8C5E0030AD92 /* WWDCWebsiteInteractionController.h */,
+				921127C4176B8C5E0030AD92 /* WWDCWebsiteInteractionController.m */,
 				921127C6176B8C7A0030AD92 /* WWDCWebsiteInteractionController.xib */,
-				921127CC176BDB6F0030AD92 /* WWDCURLRequest.m */,
 				921127CB176BDB6F0030AD92 /* WWDCURLRequest.h */,
+				921127CC176BDB6F0030AD92 /* WWDCURLRequest.m */,
 				73BD708119437A0100E0E51B /* ALProgressIndicator.h */,
 				73BD708219437A0100E0E51B /* ALProgressIndicator.m */,
 				9211278D176B00C30030AD92 /* MainMenu.xib */,
