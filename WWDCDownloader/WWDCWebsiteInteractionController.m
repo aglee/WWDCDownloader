@@ -119,6 +119,8 @@
 	[self.SDCheckbox setEnabled:YES];
 	[self.PDFCheckbox setEnabled:YES];
 
+	self.numberCompleted = self.numberFailed = self.numberRemaining = 0;
+
 	[self.refreshSessionsButton setEnabled:YES];
 	[self.downloadButton setEnabled:YES];
 
@@ -159,12 +161,23 @@
 }
 
 - (void) updateControlsForFinishedDownloading {
-	[self updateControlsForReadyToDownload];
-	[self updateTimeElapsedField:nil];
-
 	[self.downloadTimer invalidate];
 	self.downloadTimer = nil;
+
+	[self updateTimeElapsedField:nil];
+
+	NSAlert *alert = [[NSAlert alloc] init];
+	alert.messageText = @"Done";
+	alert.informativeText = [NSString stringWithFormat:@"Time elapsed: %@.\n\n%@ downloads completed successfully.\n\n%@ downloads failed.\n\n%@ downloads were skipped because it looked like the files had already been downloaded.", self.timeElapsedTextField.stringValue, @(self.numberCompleted), @(self.numberFailed), @(self.numberAlreadyDownloaded)];
+	[alert addButtonWithTitle:@"OK"];
+	[alert beginSheetModalForWindow:self.window modalDelegate:self didEndSelector:@selector(finishedDownloadingAlertDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
+
+- (void)finishedDownloadingAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self updateControlsForReadyToDownload];
+}
+
 
 - (void) updateDownloadProgressBar
 {
@@ -198,8 +211,8 @@
 }
 
 - (void) updateTimeElapsedField:(NSNotification *)note {
-	NSTimeInterval endTimestamp = [[NSDate date] timeIntervalSince1970];
-	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(endTimestamp - _startTimestamp)];
+	NSTimeInterval nowTimestamp = [[NSDate date] timeIntervalSince1970];
+	self.timeElapsedTextField.stringValue = [self stringForTimeInterval:(nowTimestamp - _startTimestamp)];
 }
 
 - (NSString *)stringForTimeInterval:(NSTimeInterval)interval
