@@ -211,10 +211,5 @@
             </connections>
         </webView>
         <userDefaultsController representsSharedInstance="YES" id="K65-Xj-ue2"/>
-        <objectController id="9FL-Hw-pFM">
-            <connections>
-                <binding destination="-2" name="contentObject" keyPath="self" id="YbX-8B-KAD"/>
-            </connections>
-        </objectController>
     </objects>
 </document>
